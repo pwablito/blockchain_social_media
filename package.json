@@ -2,6 +2,7 @@
     "name": "blockchain_social_media",
     "version": "1.0.0",
     "description": "",
+    "type": "module",
     "main": "main.js",
     "scripts": {
         "node": "node main.js"
