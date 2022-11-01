@@ -1,22 +1,22 @@
 {
-  "name": "blockchain_social_media",
-  "version": "1.0.0",
-  "description": "",
-  "main": "main.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/pwablito/blockchain_social_media.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/pwablito/blockchain_social_media/issues"
-  },
-  "homepage": "https://github.com/pwablito/blockchain_social_media#readme",
-  "dependencies": {
-    "neo4j-driver": "^5.2.0"
-  }
+    "name": "blockchain_social_media",
+    "version": "1.0.0",
+    "description": "",
+    "main": "main.js",
+    "scripts": {
+        "node": "node main.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pwablito/blockchain_social_media.git"
+    },
+    "author": "Paul Spencer",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/pwablito/blockchain_social_media/issues"
+    },
+    "homepage": "https://github.com/pwablito/blockchain_social_media#readme",
+    "dependencies": {
+        "neo4j-driver": "^5.2.0"
+    }
 }
