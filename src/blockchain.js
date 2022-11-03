@@ -73,3 +73,10 @@ class Profile {
         return hash.digest()
     }
 }
+
+export {
+    Block,
+    Post,
+    Comment,
+    Profile,
+}
