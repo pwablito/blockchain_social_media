@@ -1,5 +1,5 @@
 import { driver, auth, session } from 'neo4j-driver';
-import { generate_id } from './util';
+import { generate_id } from './util.js';
 
 
 class DatabaseManager {
@@ -143,6 +143,23 @@ class DatabaseManager {
 
     async close() {
         await this.db_driver.close()
+    }
+
+
+    async get_detached_profiles() {
+        throw {
+            "error": "Not implemented"
+        }
+    }
+    async get_detached_posts() {
+        throw {
+            "error": "Not implemented"
+        }
+    }
+    async get_detached_comments() {
+        throw {
+            "error": "Not implemented"
+        }
     }
 }
 
