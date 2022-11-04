@@ -16,24 +16,26 @@ async function main() {
 
     let interrupt = false
     let interrupt_func = () => {
-        console.log("Got interrupt, killing program")
-        interrupt = true
-        server.close(() => {
-            "Shutting down api listener"
-        })
-    }
-    // Set signal handlers to kill main loop
+            console.log("Got interrupt, killing program")
+            interrupt = true
+            server.close(() => {
+                "Shutting down api listener"
+            })
+        }
+        // Set signal handlers to kill main loop
     process.on('SIGINT', interrupt_func)
     process.on('SIGQUIT', interrupt_func)
     process.on('SIGTERM', interrupt_func)
 
     while (!interrupt) {
         // Short sleep for debugging purposes to allow node to shutdown on interrupt
+        // TODO remove this eventually
         await new Promise(resolve => setTimeout(resolve, 100));
         // Gather unattached objects from database
         let profiles = mgr.get_detached_profiles()
         let posts = mgr.get_detached_posts()
         let comments = mgr.get_detached_comments()
+
         // Try solving a hash puzzle to generate nonce for new block
         // Send result, unless interrupted by another node solving it first
 
