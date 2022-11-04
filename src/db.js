@@ -11,6 +11,43 @@ class DatabaseManager {
         this.db_driver = driver(uri, auth.basic(user, password))
     }
 
+    async create_block(block_id, post_ids, profile_ids, comment_ids, previous_block_hash) {
+        try {
+            await session.run(
+                'CREATE (b:Block {id: $id, previous_block_hash: $previous_block_hash}) RETURN b', {
+                    id: block_id,
+                    previous_block_hash: previous_block_hash,
+                }
+            )
+            for (let post_id in post_ids) {
+                await session.run(
+                    'MATCH (p:Post) WHERE p.id=$post_id MATCH (b:Block) WHERE b.id=$block_id CREATE (p)-[r:VERIFIES]->(b) RETURN r', {
+                        post_id: post_id,
+                        block_id: block_id,
+                    }
+                )
+            }
+            for (let profile_id in profile_ids) {
+                await session.run(
+                    'MATCH (p:Profile) WHERE p.id=$profile_id MATCH (b:Block) WHERE b.id=$block_id CREATE (p)-[r:VERIFIES]->(b) RETURN r', {
+                        profile_id: profile_id,
+                        block_id: block_id,
+                    }
+                )
+            }
+            for (let comment_id in comment_ids) {
+                await session.run(
+                    'MATCH (c:Comment) WHERE c.id=$comment_id MATCH (b:Block) WHERE b.id=$block_id CREATE (c)-[r:VERIFIES]->(b) RETURN r', {
+                        comment_id: comment_id,
+                        block_id: block_id,
+                    }
+                )
+            }
+        } finally {
+            await session.close()
+        }
+    }
+
     async set_head(block_id) {
         try {
 
@@ -34,7 +71,7 @@ class DatabaseManager {
             )
 
             // Check that the right number of connections were made
-            if (response.records.length == 0) {
+            if (response.records.length === 0) {
                 throw {
                     error: "Block not found"
                 }
@@ -57,7 +94,7 @@ class DatabaseManager {
                     handle: profile_handle,
                 }
             )
-            if (response.records.length == 0) {
+            if (response.records.length === 0) {
                 throw {
                     error: "Handle not found"
                 }
@@ -85,7 +122,7 @@ class DatabaseManager {
                     id: author_id,
                 }
             )
-            if (response.records.length == 0) {
+            if (response.records.length === 0) {
                 throw {
                     error: "Author id not found"
                 }
@@ -110,7 +147,7 @@ class DatabaseManager {
                     profile_id: author_id,
                 }
             )
-            if (response.records.length == 0) {
+            if (response.records.length === 0) {
                 throw {
                     error: "Relationship not created"
                 }
