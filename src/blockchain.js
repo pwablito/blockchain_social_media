@@ -4,11 +4,12 @@ import { createHash } from 'node:crypto';
 const HASH_TYPE = 'sha256'
 
 class Block {
-    constructor(posts, profiles, comments, previous_block_hash) {
+    constructor(posts, profiles, comments, previous_block_hash, nonce) {
         this.posts = posts
         this.profiles = profiles
         this.comments = comments
         this.previous_block_hash = previous_block_hash
+        this.nonce = nonce
     }
 
     get_hash() {
@@ -17,6 +18,7 @@ class Block {
         for (let profile in this.profiles) hash.update(profile.get_hash())
         for (let comment in this.comments) hash.update(comment.get_hash())
         hash.update(this.previous_block_hash)
+        hash.update(this.nonce)
         return hash.digest()
     }
 }
