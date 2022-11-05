@@ -1,5 +1,6 @@
 import { driver, auth, session } from 'neo4j-driver';
 import { generate_id } from './util.js';
+import { Profile, Comment, Post } from './blockchain.js';
 
 
 class DatabaseManager {
@@ -178,25 +179,69 @@ class DatabaseManager {
         return pubkey
     }
 
-    async close() {
-        await this.db_driver.close()
-    }
-
 
     async get_detached_profiles() {
-        throw {
-            "error": "Not implemented"
+        const session = this.db_driver.session()
+        let profiles = []
+        try {
+            let response = await session.run(
+                'MATCH (pr:Profile) WHERE NOT (pr)--(b:Block) RETURN pr'
+            )
+            for (let fields in response.records[0]._fields) {
+                profiles.push(new Profile(
+                    fields.id,
+                    fields.handle,
+                    fields.bio,
+                    fields.pubkey,
+                ))
+            }
+        } finally {
+            await session.close()
         }
+        return profiles
     }
     async get_detached_posts() {
-        throw {
-            "error": "Not implemented"
+        const session = this.db_driver.session()
+        let posts = []
+        try {
+            let response = await session.run(
+                'MATCH (po:Post) WHERE NOT (po)--(b:Block) RETURN po'
+            )
+            for (let fields in response.records[0]._fields) {
+                posts.push(new Post(
+                    fields.id,
+                    fields.body,
+                    fields.author_handle,
+                ))
+            }
+        } finally {
+            await session.close()
         }
+        return posts
     }
     async get_detached_comments() {
-        throw {
-            "error": "Not implemented"
+        const session = this.db_driver.session()
+        let comments = []
+        try {
+            let response = await session.run(
+                'MATCH (c:Comment) WHERE NOT (c)--(b:Block) RETURN c'
+            )
+            for (let fields in response.records[0]._fields) {
+                comments.push(new Comment(
+                    fields.id,
+                    fields.body,
+                    fields.post_id,
+                    fields.author_id,
+                ))
+            }
+        } finally {
+            await session.close()
         }
+        return comments
+    }
+
+    async close() {
+        await this.db_driver.close()
     }
 }
 
