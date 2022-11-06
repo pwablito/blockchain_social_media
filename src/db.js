@@ -115,7 +115,6 @@ class DatabaseManager {
         const session = this.db_driver.session()
         let post_id = generate_id()
 
-        // TODO query author_id and create a relationship between new post and associated Profile
         try {
 
             let response = await session.run(
@@ -133,7 +132,18 @@ class DatabaseManager {
                 }
             }
 
-            // TODO check that the new post id hasnt already been used somewhere, recreate it until we get a new one
+            // Check that the new post id hasnt already been used somewhere
+            response = await session.run(
+                'MATCH (p:Post) WHERE p.id=$id RETURN p', {
+                    id: post_id
+                }
+            )
+            if (response.records.length !== 0) {
+                throw {
+                    error: "id already used"
+                }
+            }
+
             // Create detached node which will be collected at next block creation
             await session.run(
                 'CREATE (p:Post {id: $id, body: $body, author_id: $author_id}) RETURN p', {
@@ -142,7 +152,7 @@ class DatabaseManager {
                     author_id: author_id,
                 }
             )
-            await session.run(
+            response = await session.run(
                 'MATCH (po:Post {id: $post_id}) MATCH (pr:Profile {id: $profile_id} CREATE (pr)-[r:POSTED]->(po) RETURN r', {
                     post_id: post_id,
                     profile_id: author_id,
