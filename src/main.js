@@ -4,6 +4,8 @@ import { get_api } from "./api.js"
 
 const api_port = 8000
 
+var other_nodes = [] // This needs to be initialized with something
+
 async function main() {
     console.log("Welcome to the neo4j-powered node for blockchain social media")
     let mgr = new DatabaseManager()
@@ -35,7 +37,6 @@ async function main() {
         let posts = mgr.get_detached_posts()
         let comments = mgr.get_detached_comments()
 
-
         // Try solving a hash puzzle to generate nonce for new block
         // Send result, unless interrupted by another node solving it first
 
@@ -44,4 +45,4 @@ async function main() {
     await mgr.close()
 }
 
-export { main }
+export { main, other_nodes }
