@@ -44,6 +44,8 @@ class DatabaseManager {
                     }
                 )
             }
+        } catch (e) {
+            console.error(e)
         } finally {
             await session.close()
         }
@@ -81,6 +83,8 @@ class DatabaseManager {
                     error: "Multiple blocks with matching id returned"
                 }
             }
+        } catch (e) {
+            console.error(e)
         } finally {
             await session.close()
         }
@@ -105,6 +109,8 @@ class DatabaseManager {
                 }
             }
             pubkey = response.records[0]._fields[0].pubkey
+        } catch (e) {
+            console.error(e)
         } finally {
             await session.close()
         }
@@ -167,26 +173,35 @@ class DatabaseManager {
                     error: "Multiple relationships created"
                 }
             }
+        } catch (e) {
+            console.error(e)
         } finally {
             await session.close()
         }
+
+        return post_id
     }
 
     async create_profile(handle, pubkey, bio) {
         const session = this.db_driver.session()
+        let id = generate_id()
+
         try {
             let response = await session.run(
-                'CREATE (pr:Profile {handle: $handle, pubkey: $pubkey, bio: $bio}) RETURN pr', {
+                'CREATE (pr:Profile {id: $id, handle: $handle, pubkey: $pubkey, bio: $bio}) RETURN pr', {
+                    id: id,
                     handle: handle,
                     pubkey: pubkey,
                     bio: bio,
                 }
             )
             pubkey = response.records[0]._fields[0].pubkey
+        } catch (e) {
+            console.error(e)
         } finally {
             await session.close()
         }
-        return pubkey
+        return id
     }
 
 
@@ -195,16 +210,18 @@ class DatabaseManager {
         let profiles = []
         try {
             let response = await session.run(
-                'MATCH (pr:Profile) WHERE NOT (pr)--(b:Block) RETURN pr'
+                'MATCH (pr:Profile) WHERE NOT (pr)--(:Block) RETURN pr'
             )
-            for (let fields in response.records[0]._fields) {
+            response.records.forEach((record) => {
                 profiles.push(new Profile(
-                    fields.id,
-                    fields.handle,
-                    fields.bio,
-                    fields.pubkey,
+                    record._fields[0].id,
+                    record._fields[0].handle,
+                    record._fields[0].bio,
+                    record._fields[0].pubkey,
                 ))
-            }
+            })
+        } catch (e) {
+            console.error(e)
         } finally {
             await session.close()
         }
@@ -215,15 +232,17 @@ class DatabaseManager {
         let posts = []
         try {
             let response = await session.run(
-                'MATCH (po:Post) WHERE NOT (po)--(b:Block) RETURN po'
+                'MATCH (po:Post) WHERE NOT (po)--(:Block) RETURN po'
             )
-            for (let fields in response.records[0]._fields) {
+            response.records.forEach((record) => {
                 posts.push(new Post(
-                    fields.id,
-                    fields.body,
-                    fields.author_handle,
+                    record._fields[0].id,
+                    record._fields[0].body,
+                    record._fields[0].author_handle,
                 ))
-            }
+            })
+        } catch (e) {
+            console.error(e)
         } finally {
             await session.close()
         }
@@ -234,16 +253,18 @@ class DatabaseManager {
         let comments = []
         try {
             let response = await session.run(
-                'MATCH (c:Comment) WHERE NOT (c)--(b:Block) RETURN c'
+                'MATCH (c:Comment) WHERE NOT (c)--(:Block) RETURN c'
             )
-            for (let fields in response.records[0]._fields) {
+            response.records.forEach((record) => {
                 comments.push(new Comment(
-                    fields.id,
-                    fields.body,
-                    fields.post_id,
-                    fields.author_id,
+                    record._fields[0].id,
+                    record._fields[0].body,
+                    record._fields[0].post_id,
+                    record._fields[0].author_id,
                 ))
-            }
+            })
+        } catch (e) {
+            console.error(e)
         } finally {
             await session.close()
         }
