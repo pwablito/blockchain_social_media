@@ -6,7 +6,7 @@ function get_api(db_manager) {
     const app = express()
     app.use(express.json())
 
-    app.post('/status', (_, res) => {
+    app.post('/status', async(_, res) => {
         // Quick endpoint to check that the server is still up
         // TODO add some health checks, report back their results
         res.send({ success: true, status: "ok" })
@@ -33,12 +33,22 @@ function get_api(db_manager) {
         }
     })
 
-    app.post('/join', (req, res) => {
-        res.send({ "success": true, "nodes": other_nodes })
-        if (req.body.addr) {
-            other_nodes.push(req.body.addr)
+    app.post('/join', async(req, res) => {
+        res.send({ success: true, nodes: other_nodes })
+        if (req.body.address) {
+            other_nodes.push(req.body.address)
         }
     })
+
+    app.post('/block_found', async(_, res) => {
+        // Add new block and associated objects to database
+        res.send({ success: false, error: "Not implemented" })
+
+        // Interrupt hash puzzle solving loop
+        // Report to all other nodes the number of hashes we tried
+        // Calculate next hash target
+    })
+
     return app
 }
 
