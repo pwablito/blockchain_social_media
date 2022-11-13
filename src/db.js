@@ -159,7 +159,7 @@ class DatabaseManager {
                 }
             )
             response = await session.run(
-                'MATCH (po:Post {id: $post_id}) MATCH (pr:Profile {id: $profile_id} CREATE (pr)-[r:POSTED]->(po) RETURN r', {
+                'MATCH (po:Post) WHERE po.id=$post_id MATCH (pr:Profile) WHERE pr.id=$profile_id CREATE (pr)-[r:POSTED]->(po) RETURN r', {
                     post_id: post_id,
                     profile_id: author_id,
                 }
