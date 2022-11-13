@@ -33,6 +33,16 @@ function get_api(db_manager) {
         }
     })
 
+    app.post('/comment', async(req, res) => {
+        try {
+            let comment_id = await db_manager.create_comment(req.body.body, req.body.author_id, req.body.post_id)
+            res.send({ success: true, id: comment_id })
+        } catch (e) {
+            console.log(e)
+            res.send({ success: false, error: e })
+        }
+    })
+
     app.post('/join', async(req, res) => {
         res.send({ success: true, nodes: other_nodes })
         if (req.body.address) {

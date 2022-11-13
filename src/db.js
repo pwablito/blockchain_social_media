@@ -182,6 +182,100 @@ class DatabaseManager {
         return post_id
     }
 
+    async create_comment(body, author_id, post_id) {
+        const session = this.db_driver.session()
+        let comment_id = generate_id()
+
+        try {
+            let response = await session.run(
+                'MATCH (p:Profile) WHERE p.id=$id RETURN p', {
+                    id: author_id,
+                }
+            )
+            if (response.records.length === 0) {
+                throw {
+                    error: "Author id not found"
+                }
+            } else if (response.records.length > 1) {
+                throw {
+                    error: "Multiple authors with matching id returned"
+                }
+            }
+
+            response = await session.run(
+                'MATCH (p:Post) WHERE p.id=$id RETURN p', {
+                    id: post_id,
+                }
+            )
+            if (response.records.length === 0) {
+                throw {
+                    error: "Post id not found"
+                }
+            } else if (response.records.length > 1) {
+                throw {
+                    error: "Multiple posts with matching id returned"
+                }
+            }
+
+            // Check that the new comment id hasnt already been used somewhere
+            response = await session.run(
+                'MATCH (c:Comment) WHERE c.id=$id RETURN c', {
+                    id: comment_id
+                }
+            )
+            if (response.records.length !== 0) {
+                throw {
+                    error: "id already used"
+                }
+            }
+
+            // Create detached node which will be collected at next block creation
+            await session.run(
+                'CREATE (c:Comment {id: $id, body: $body, author_id: $author_id, post_id: $post_id}) RETURN c', {
+                    id: comment_id,
+                    body: body,
+                    author_id: author_id,
+                    post_id: post_id,
+                }
+            )
+            response = await session.run(
+                'MATCH (c:Comment) WHERE c.id=$comment_id MATCH (pr:Profile) WHERE pr.id=$profile_id CREATE (pr)-[r:COMMENTED]->(c) RETURN r', {
+                    comment_id: comment_id,
+                    profile_id: author_id,
+                }
+            )
+            if (response.records.length === 0) {
+                throw {
+                    error: "Relationship not created"
+                }
+            } else if (response.records.length > 1) {
+                throw {
+                    error: "Multiple relationships created"
+                }
+            }
+            response = await session.run(
+                'MATCH (c:Comment) WHERE c.id=$comment_id MATCH (po:Post) WHERE po.id=$post_id CREATE (po)-[r:HAS_COMMENT]->(c) RETURN r', {
+                    comment_id: comment_id,
+                    post_id: post_id,
+                }
+            )
+            if (response.records.length === 0) {
+                throw {
+                    error: "Relationship not created"
+                }
+            } else if (response.records.length > 1) {
+                throw {
+                    error: "Multiple relationships created"
+                }
+            }
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await session.close()
+        }
+        return post_id
+    }
+
     async create_profile(handle, pubkey, bio) {
         const session = this.db_driver.session()
         let id = generate_id()
